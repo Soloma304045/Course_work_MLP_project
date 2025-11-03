@@ -1,15 +1,21 @@
-import pandas as pd
+import numpy as np
 import traceback
 
-from Library.Tools.Train_Split import split_simple
+from Library.Tools.Train_Split import split
 from Library.Tools.NeuralNetwork import NeuralNetwork
-from Library.Tools.Sigmoid import sigmoid
+from Library.Tools.Activate import reLu
 
 try:
-    (X_train, X_test), (y_train, y_test) = split_simple()
+    (X_train, X_test), (y_train, y_test), (y_min, y_max) = split(graph=True)
 
-    network = NeuralNetwork(layers_config=[3, 16, 8, 1], activation_functions=[sigmoid, sigmoid, None])
+    network = NeuralNetwork(layers_config=[3, 16, 8, 4, 1], activation_functions=[reLu, reLu, reLu, None])
     network.train(X_train, y_train, graph=True)
+
+    y_pred = network.forward(X_test) * (y_max - y_min) + y_min
+    y_test = y_test * (y_max - y_min) + y_min
+
+    test_mse = np.mean((y_pred - y_test) ** 2)
+    print(f"Средняя квадратичная ошибка на тестовом наборе - {test_mse}")
     input()
 
 except Exception as e:

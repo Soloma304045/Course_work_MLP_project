@@ -1,5 +1,5 @@
 import numpy as np
-from Library.Tools.Sigmoid import sigmoid_derivative
+from project.Library.Tools.Activate import reLu_derivative
 
 def train_step(network, X, y, learning_rate, graph):
     outputs = [X]
@@ -7,38 +7,30 @@ def train_step(network, X, y, learning_rate, graph):
         X = layer.forward(X)
         outputs.append(X)
     
-    # Вычисление ошибки
-    error = outputs[-1] - y.reshape(-1, 1)
-    total_error = np.mean(np.abs(error))
-    
-    # Обратное распространение
+    error = outputs[-1] - y.values.reshape(-1, 1)
+    mse = np.mean(error ** 2)  
+
     for i in reversed(range(len(network.layers))):
         layer = network.layers[i]
         layer_output = outputs[i + 1]
         layer_input = outputs[i]
         
-        # Вычисление дельты
-        if i == len(network.layers) - 1:  # Выходной слой
+        if i == len(network.layers) - 1:
             delta = error
-        else:  # Скрытые слои
+        else:
             next_layer = network.layers[i + 1]
-            # Суммируем вклады в ошибку от следующего слоя
             error_back = np.dot(delta, next_layer.weights.T)
-            if layer.activation_function != None:
-                delta = error_back * sigmoid_derivative(layer_output)
-            else:
-                delta = error_back
+            delta = error_back * reLu_derivative(layer_output)
         
-        # Обновление весов и смещений
-        # Добавляем смещение к входным данным
-        layer_input_with_bias = np.column_stack([np.ones((layer_input.shape[0], 1)), layer_input])
+        layer_inputs = np.column_stack([np.ones((layer_input.shape[0], 1)), layer_input])
         
-        # Вычисляем градиенты
-        dw = np.dot(layer_input_with_bias.T, delta) / X.shape[0]
-        db = np.mean(delta, axis=0)
+        dw_combined = np.dot(layer_inputs.T, delta) / X.shape[0]
+        dw_combined = np.clip(dw_combined, -1.0, 1.0)
+
+        db = dw_combined[0].reshape(1, -1)
+        dw = dw_combined[1:]
         
-        # Обновляем параметры
         layer.weights -= learning_rate * dw
         layer.biases -= learning_rate * db
     
-    return total_error
+    return mse
