@@ -1,11 +1,15 @@
 import pandas as pd
-import numpy as np
 import traceback
 
-try:
-    from Library.Tools.Train_Split import split
+from Library.Tools.Train_Split import split_simple
+from Library.Tools.NeuralNetwork import NeuralNetwork
+from Library.Tools.Sigmoid import sigmoid
 
-    (X_train, X_test), (y_train, y_test) = split()
+try:
+    (X_train, X_test), (y_train, y_test) = split_simple()
+
+    network = NeuralNetwork(layers_config=[3, 16, 8, 1], activation_functions=[sigmoid, sigmoid, None])
+    network.train(X_train, y_train, graph=True)
     input()
 
 except Exception as e:
