@@ -6,12 +6,14 @@ def split(test_size=0.2, random_state=42, graph=False):
     data_path = os.path.join(r'C:\Users\Иван\Desktop\MLP\project\Library\data', 'T1.csv')
     df = pd.read_csv(data_path, sep=',')
 
+    df = df[df['LV ActivePower (kW)'] >= 0]
+    df = df[~((df['Wind Speed (m/s)'] > 2) & (df['LV ActivePower (kW)'] == 0))]
+
     if graph:
         print("Первые 5 строк данных:")
         print(df.head())
         print(f"Всего записей: {len(df)}")
 
-    # --- Нормализация ---
     df_normalized = df.copy()
     wind_min = df_normalized['Wind Speed (m/s)'].min()
     wind_max = df_normalized['Wind Speed (m/s)'].max()

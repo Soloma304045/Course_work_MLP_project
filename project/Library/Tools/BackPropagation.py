@@ -1,5 +1,5 @@
 import numpy as np
-from project.Library.Tools.Activate import reLu_derivative
+from Library.Tools.Activate import reLu_derivative
 
 def train_step(network, X, y, learning_rate, graph):
     outputs = [X]
